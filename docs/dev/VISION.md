@@ -1,24 +1,38 @@
-# Development Vision - vs-code extenstion to ... WinCC OA
+# Development Vision - WinCC OA Syntax Check Tool
 
 ## 🎯 Vision Statement
+
+Provide a simple, CI/CD-ready syntax checking tool for WinCC OA projects via CLI and TypeScript API.
 
 ---
 
 ## 🌟 Core Objectives
 
+1. **Static Analysis** - Run WinCC OA syntax checks on panels and scripts
+2. **CI/CD Ready** - Exit code 0 on success, non-zero on errors
+3. **Cross-Platform** - Support Windows and Linux (headless)
+4. **Simple API** - Minimal, focused TypeScript API and CLI
+
 ---
 
 ## 🏗️ Architecture Principles
-
-└─────────────────────────────────────┘
 
 ### Design Principles
 
 #### 1. **Platform Agnostic**
 
+- Support Windows and Linux
+- Use `-platform minimal` for headless environments
+
 #### 2. **Functional & Composable**
 
+- Simple functions with clear inputs/outputs
+- Leverage existing `npm-winccoa-core` utilities
+
 #### 3. **Performance First**
+
+- Configurable timeout for long-running checks
+- Efficient process spawning and output capture
 
 #### 4. **Type Safety**
 
@@ -39,6 +53,51 @@
 ## 📦 Package Structure
 
 ### Module Organization
+
+```text
+src/
+├── index.ts          # Main exports
+├── api.ts            # Public API functions (checkSyntax, checkPanels, checkScripts)
+├── cli.ts            # CLI entry point
+├── syntax-checker.ts # Core syntax checker implementation
+├── types.ts          # TypeScript types and interfaces
+├── types/
+│   └── index.ts      # Type exports
+└── utils/
+    └── index.ts      # Utility functions
+```
+
+### CLI Usage
+
+```bash
+winccoa-syntax-check [options]
+
+Options:
+  -c, --config <path>    WinCC OA project config file [required]
+  -m, --mode <mode>      all | scripts | panels (default: all)
+  -i, --integrity        Add integrity check (+)
+  -s, --scripts <path>   Start path for scripts
+  -p, --panels <path>    Start path for panels
+  -t, --timeout <ms>     Timeout in milliseconds (default: 60000)
+  -h, --help             Show help
+```
+
+### TypeScript API
+
+```typescript
+import { checkSyntax, checkPanels, checkScripts } from '@winccoa-tools-pack/npm-winccoa-syntax-check';
+
+// Full syntax check
+const result = await checkSyntax({
+    configPath: '/path/to/project/config/config',
+    mode: 'all',
+    integrity: true,
+});
+
+// Convenience wrappers
+await checkPanels({ configPath: '...', panelsPath: 'panels/' });
+await checkScripts({ configPath: '...', scriptsPath: 'scripts/' });
+```
 
 ---
 
@@ -79,6 +138,19 @@
 ---
 
 ## 🎨 API Design Philosophy
+
+### Core Principles
+
+1. **Single Responsibility** - One tool, one job: syntax checking
+2. **Minimal Dependencies** - Leverage `@winccoa-tools-pack/npm-winccoa-core`
+3. **Exit Code Convention** - `0` = success, `!= 0` = failure (CI/CD friendly)
+4. **No Log Parsing** - Leave detailed log analysis to dedicated tools
+
+### Key Technical Decisions
+
+- Use `-config` (not `-proj`) as WinCC OA requires this for syntax checking
+- Add `-platform minimal` for headless Linux support
+- Redirect output via `-log +stderr` for capture
 
 ---
 
@@ -170,27 +242,51 @@
 
 ## 🛠️ Tooling & Scripts
 
+### npm Scripts
+
+- `npm run build` - Build TypeScript to dist/
+- `npm run test` - Run linting and unit tests
+- `npm run test:unit` - Run unit tests only
+- `npm run test:integration` - Run integration tests (requires WinCC OA)
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint issues
+
 ---
 
 ## 🌍 Cross-Platform Considerations
 
 ### Windows
 
+- Native WinCC OA installation
+- Standard execution
+
 ### Linux
 
+- Requires `-platform minimal` for headless execution
+- WinCC OA UI component must be installed
+
 ### macOS
+
+- Not officially supported by WinCC OA
 
 ---
 
 ## 🎯 Future Roadmap
 
-### v0.1.0 - Initial Release (Current)
+### v0.1.0 - Initial Release
 
-- ✅ Utilities: Path discovery, version parsing
-- 🔄 Types: Version info, components
-- 📋 Core: Project detection (planned)
+- ✅ Project setup from template
+- 📋 Core syntax checker implementation
+- 📋 CLI with all options
+- 📋 TypeScript API
+- 📋 Unit tests
+- 📋 Integration tests
 
-### v0.2.0 -
+### v0.2.0 - Enhancements
+
+- 📋 Improved error reporting
+- 📋 JSON output format option
+- 📋 Watch mode for development
 
 ---
 
@@ -232,15 +328,15 @@
 
 ### WinCC OA
 
-- Internal WinCC OA documentation
-- Component structure reference
-- Version compatibility matrix
+- [Official WinCC OA Documentation](https://www.siemens.com/winccoa)
+- WinCC OA 3.19+ required for syntax checking
+- `-syntax` command line option reference
 
 ---
 
-**Last Updated**: Januar 5, 2026  
+**Last Updated**: March 6, 2026  
 **Vision Status**: Active Development  
-**Target Release**: v1.0.0 (Q1 2026)
+**Target Release**: v0.1.0 (Q1 2026)
 
 ---
 

@@ -1,15 +1,18 @@
 /**
- * WinCC OA UI PNL/XML Converter
+ * WinCC OA Syntax Check Tool
  *
- * Provides reliable PNL ⇄ XML transformations for WinCC OA UI panels
- * using the WCCOAui manager under the hood.
+ * Provides syntax checking for WinCC OA projects using the WCCOAui manager
+ * with the -syntax flag for static analysis of panels and scripts.
  */
 
 // Types
-export { ConversionDirection, ConversionOptions, ConversionResult } from './types';
+export { SyntaxCheckMode, SyntaxCheckOptions, SyntaxCheckResult } from './types';
 
-// Core converter
-export { PnlXmlConverter } from './converter';
+// Core syntax checker
+export { SyntaxChecker } from './syntax-checker';
 
 // Convenience API
-export { pnlToXml, xmlToPnl } from './api';
+export { checkSyntax, checkPanels, checkScripts } from './api';
+
+// Utilities
+export { containsStderrErrors, STDERR_ERROR_KEYWORDS } from './utils';
