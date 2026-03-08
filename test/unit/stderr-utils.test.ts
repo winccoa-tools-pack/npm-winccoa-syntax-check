@@ -44,3 +44,22 @@ test('STDERR_ERROR_KEYWORDS: contains expected keywords', () => {
     assert.ok(STDERR_ERROR_KEYWORDS.includes('FATAL'));
     assert.equal(STDERR_ERROR_KEYWORDS.length, 3);
 });
+
+test('containsStderrErrors: ignores Qt platform messages', () => {
+    const qtMessage =
+        '(1), 2026.03.07 18:11:28.802, Qt, This plugin does not support createPlatformOpenGLContext!';
+    assert.equal(containsStderrErrors(qtMessage), false);
+});
+
+test('containsStderrErrors: ignores Qt messages but catches real errors', () => {
+    const mixed = `(1), 2026.03.07 18:11:28.802, Qt, This plugin does not support createPlatformOpenGLContext!
+WCCOAui (0), 2026.03.07 18:11:29.712, WinCC_OA, WARNING, Variable not used`;
+    assert.equal(containsStderrErrors(mixed), true);
+});
+
+test('containsStderrErrors: returns false for only Qt messages', () => {
+    const qtOnly = `Qt, This plugin does not support something
+createPlatformOpenGLContext warning`;
+    assert.equal(containsStderrErrors(qtOnly), false);
+});
+
