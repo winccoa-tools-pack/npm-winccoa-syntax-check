@@ -3,12 +3,12 @@
  */
 
 class Console {
-    static log(const string &message) {
+    public static log(const string &message) {
         // Simulate console.log behavior
         DebugTN(message);
     }
 };
 
-halloWorld() {
+helloWorld() {
     Console::log("Hello, World!");
 }

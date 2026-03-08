@@ -16,12 +16,18 @@ export const STDERR_ERROR_KEYWORDS = ['WARNING', 'SEVERE', 'FATAL'] as const;
  * These are known non-error messages that may appear in stderr.
  */
 const STDERR_EXCLUDE_PATTERNS = [
+    // Qt platform messages - any line containing ", Qt," is a Qt log line
+    /,\s*Qt,/i,
+    /\tQt,/i,
     // Qt platform messages (OpenGL context, etc.)
-    /Qt.*does not support/i,
-    // Informational Qt messages
-    /Qt,\s*This plugin/i,
+    /does not support.*Context/i,
+    // Qt plugin messages
+    /This plugin does not support/i,
     // Platform-specific Qt warnings that aren't actual errors
     /createPlatformOpenGLContext/i,
+    /OpenGL/i,
+    // WinCC OA installation lookup warning (not a syntax error)
+    /could not find registered WinCC_OA installation/i,
 ];
 
 /**
