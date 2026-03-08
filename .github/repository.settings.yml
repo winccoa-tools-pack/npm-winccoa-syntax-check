@@ -26,6 +26,9 @@ topics:
   - industrial-automation
   - Siemens
   - ETM
+  - linting
+  - static-code-analysis
+  - code-quality
 
 security:
   enable_vulnerability_alerts: true
