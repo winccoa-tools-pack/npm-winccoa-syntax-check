@@ -1,17 +1,19 @@
 /**
- * Conversion direction for PNL ⇄ XML transformations.
+ * Syntax check mode for WinCC OA.
  */
-export enum ConversionDirection {
-    /** Convert .pnl panel files to .xml */
-    PNL_TO_XML = 'XML',
-    /** Convert .xml files back to .pnl panels */
-    XML_TO_PNL = 'PNL',
+export enum SyntaxCheckMode {
+    /** Check both panels and scripts */
+    ALL = 'all',
+    /** Check only scripts */
+    SCRIPTS = 'scripts',
+    /** Check only panels */
+    PANELS = 'panels',
 }
 
 /**
- * Options for the PNL ⇄ XML conversion process.
+ * Options for the WinCC OA syntax check process.
  */
-export interface ConversionOptions {
+export interface SyntaxCheckOptions {
     /**
      * WinCC OA version to use (e.g., '3.20').
      * Required to locate the correct WCCOAui executable.
@@ -19,40 +21,48 @@ export interface ConversionOptions {
     version: string;
 
     /**
-     * Path to the panel file (.pnl) or directory to convert.
-     *
-     * WCCOAui resolves this path **relative to the project's `panels/`
-     * directory**, so typically a bare filename like `"about.pnl"` or a
-     * sub-path like `"sub/myPanel.pnl"` is expected — not an absolute path.
+     * Path to the WinCC OA project config file.
+     * Required for syntax checking.
+     * Example: '/path/to/project/config/config'
      */
-    inputPath: string;
+    configPath: string;
 
     /**
-     * Whether to overwrite existing output files.
-     * Maps to the `-o` flag of the UI manager.
+     * Syntax check mode: 'all', 'scripts', or 'panels'.
+     * @default SyntaxCheckMode.ALL
+     */
+    mode?: SyntaxCheckMode;
+
+    /**
+     * Add integrity check (+ suffix in WinCC OA).
      * @default false
      */
-    overwrite?: boolean;
+    integrity?: boolean;
 
     /**
-     * Path to the WinCC OA project config file.
-     * Allows WCCOAui to locate a valid project context without registration.
-     * Maps to the `-config` flag of the UI manager.
+     * Start path for scripts (used with 'all' or 'scripts' mode).
+     * Path is relative to the project's scripts directory.
      */
-    configPath?: string;
+    scriptsPath?: string;
 
     /**
-     * Timeout in milliseconds for the conversion process.
+     * Start path for panels (used with 'all' or 'panels' mode).
+     * Path is relative to the project's panels directory.
+     */
+    panelsPath?: string;
+
+    /**
+     * Timeout in milliseconds for the syntax check process.
      * @default 60000
      */
     timeout?: number;
 }
 
 /**
- * Result of a PNL ⇄ XML conversion operation.
+ * Result of a syntax check operation.
  */
-export interface ConversionResult {
-    /** Whether the conversion completed successfully (exit code 0). */
+export interface SyntaxCheckResult {
+    /** Whether the syntax check passed (exit code 0 and no errors in stderr). */
     success: boolean;
 
     /** Process exit code. */
@@ -64,9 +74,12 @@ export interface ConversionResult {
     /** Standard error output captured from the UI manager process. */
     stderr: string;
 
-    /** The input path that was converted. */
-    inputPath: string;
+    /** The mode used for syntax checking. */
+    mode: SyntaxCheckMode;
 
-    /** The conversion direction used. */
-    direction: ConversionDirection;
+    /** Whether integrity check was enabled. */
+    integrity: boolean;
+
+    /** Whether stderr contains error keywords (WARNING, SEVERE, FATAL). */
+    hasStderrErrors: boolean;
 }
