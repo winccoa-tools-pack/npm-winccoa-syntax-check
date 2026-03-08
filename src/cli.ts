@@ -1,41 +1,40 @@
 #!/usr/bin/env node
 
-import { PnlXmlConverter } from './converter';
-import { ConversionDirection } from './types';
-import type { ConversionOptions } from './types';
+import { SyntaxChecker } from './syntax-checker';
+import { SyntaxCheckMode } from './types';
+import type { SyntaxCheckOptions } from './types';
 
 /**
  * CLI exit codes.
  */
 const EXIT_OK = 0;
 const EXIT_USAGE = 1;
-const EXIT_CONVERSION_FAILED = 2;
+const EXIT_SYNTAX_ERROR = 2;
 
 /**
  * Print usage information to stderr.
  */
 function printUsage(): void {
-    const bin = 'winccoa-pnl-xml';
+    const bin = 'winccoa-syntax-check';
     process.stderr.write(
         [
             '',
-            `Usage: ${bin} <command> [options]`,
-            '',
-            'Commands:',
-            '  convert pnl-to-xml <path>   Convert .pnl panel(s) to XML',
-            '  convert xml-to-pnl <path>   Convert XML file(s) back to .pnl',
+            `Usage: ${bin} [options]`,
             '',
             'Options:',
             '  -v, --version <ver>   WinCC OA version (e.g. 3.20)  [required]',
-            '  -c, --config <path>   WinCC OA project config file',
-            '  -o, --overwrite       Overwrite existing output files',
+            '  -c, --config <path>   WinCC OA project config file  [required]',
+            '  -m, --mode <mode>     Check mode: all, scripts, panels (default: all)',
+            '  -i, --integrity       Add integrity check',
+            '  -s, --scripts <path>  Start path for scripts',
+            '  -p, --panels <path>   Start path for panels',
             '  -t, --timeout <ms>    Process timeout in milliseconds (default: 60000)',
             '  -h, --help            Show this help message',
             '',
             'Examples:',
-            `  ${bin} convert pnl-to-xml panels/myPanel.pnl -v 3.20`,
-            `  ${bin} convert xml-to-pnl panels/myPanel.xml -v 3.20 -o`,
-            `  ${bin} convert pnl-to-xml panels/ -v 3.20 --timeout 120000`,
+            `  ${bin} -v 3.20 -c /path/to/project/config/config`,
+            `  ${bin} -v 3.20 -c ./config/config -m panels -i`,
+            `  ${bin} -v 3.20 -c ./config/config -m scripts -s libs/`,
             '',
         ].join('\n'),
     );
@@ -46,11 +45,12 @@ function printUsage(): void {
  * Returns the parsed CLI options or null when the input is invalid.
  */
 interface ParsedArgs {
-    direction: ConversionDirection;
-    inputPath: string;
     version: string;
-    configPath?: string;
-    overwrite: boolean;
+    configPath: string;
+    mode: SyntaxCheckMode;
+    integrity: boolean;
+    scriptsPath?: string;
+    panelsPath?: string;
     timeout?: number;
 }
 
@@ -62,39 +62,16 @@ function parseArgs(argv: string[]): ParsedArgs | null {
         return null;
     }
 
-    // Expect: convert <pnl-to-xml|xml-to-pnl> <path> [options]
-    if (args[0] !== 'convert') {
-        process.stderr.write(`Error: Unknown command "${args[0]}". Expected "convert".\n`);
-        return null;
-    }
-
-    const subCommand = args[1];
-    let direction: ConversionDirection;
-
-    if (subCommand === 'pnl-to-xml') {
-        direction = ConversionDirection.PNL_TO_XML;
-    } else if (subCommand === 'xml-to-pnl') {
-        direction = ConversionDirection.XML_TO_PNL;
-    } else {
-        process.stderr.write(
-            `Error: Unknown sub-command "${subCommand}". Expected "pnl-to-xml" or "xml-to-pnl".\n`,
-        );
-        return null;
-    }
-
-    const inputPath = args[2];
-    if (!inputPath || inputPath.startsWith('-')) {
-        process.stderr.write('Error: Missing input path.\n');
-        return null;
-    }
-
     let version = '';
-    let configPath: string | undefined;
-    let overwrite = false;
+    let configPath = '';
+    let mode: SyntaxCheckMode = SyntaxCheckMode.ALL;
+    let integrity = false;
+    let scriptsPath: string | undefined;
+    let panelsPath: string | undefined;
     let timeout: number | undefined;
 
-    // Parse remaining flags
-    let i = 3;
+    // Parse flags
+    let i = 0;
     while (i < args.length) {
         const flag = args[i];
         switch (flag) {
@@ -106,9 +83,34 @@ function parseArgs(argv: string[]): ParsedArgs | null {
             case '--config':
                 configPath = args[++i] ?? '';
                 break;
-            case '-o':
-            case '--overwrite':
-                overwrite = true;
+            case '-m':
+            case '--mode': {
+                const modeArg = args[++i] ?? '';
+                if (modeArg === 'all') {
+                    mode = SyntaxCheckMode.ALL;
+                } else if (modeArg === 'scripts') {
+                    mode = SyntaxCheckMode.SCRIPTS;
+                } else if (modeArg === 'panels') {
+                    mode = SyntaxCheckMode.PANELS;
+                } else {
+                    process.stderr.write(
+                        `Error: Invalid mode "${modeArg}". Expected "all", "scripts", or "panels".\n`,
+                    );
+                    return null;
+                }
+                break;
+            }
+            case '-i':
+            case '--integrity':
+                integrity = true;
+                break;
+            case '-s':
+            case '--scripts':
+                scriptsPath = args[++i] ?? '';
+                break;
+            case '-p':
+            case '--panels':
+                panelsPath = args[++i] ?? '';
                 break;
             case '-t':
             case '--timeout': {
@@ -133,7 +135,12 @@ function parseArgs(argv: string[]): ParsedArgs | null {
         return null;
     }
 
-    return { direction, inputPath, version, configPath, overwrite, timeout };
+    if (!configPath) {
+        process.stderr.write('Error: Project config path is required (-c / --config).\n');
+        return null;
+    }
+
+    return { version, configPath, mode, integrity, scriptsPath, panelsPath, timeout };
 }
 
 /**
@@ -148,22 +155,24 @@ async function main(): Promise<void> {
         return;
     }
 
-    const options: ConversionOptions = {
+    const options: SyntaxCheckOptions = {
         version: parsed.version,
-        inputPath: parsed.inputPath,
         configPath: parsed.configPath,
-        overwrite: parsed.overwrite,
+        mode: parsed.mode,
+        integrity: parsed.integrity,
+        scriptsPath: parsed.scriptsPath,
+        panelsPath: parsed.panelsPath,
         timeout: parsed.timeout,
     };
 
-    const directionLabel =
-        parsed.direction === ConversionDirection.PNL_TO_XML ? 'PNL → XML' : 'XML → PNL';
+    const modeLabel = parsed.mode.toUpperCase();
+    const integrityLabel = parsed.integrity ? ' (with integrity check)' : '';
 
-    process.stderr.write(`Converting ${directionLabel}: ${parsed.inputPath}\n`);
+    process.stderr.write(`Running syntax check: ${modeLabel}${integrityLabel}\n`);
 
     try {
-        const converter = new PnlXmlConverter();
-        const result = await converter.convert(options, parsed.direction);
+        const checker = new SyntaxChecker();
+        const result = await checker.check(options);
 
         if (result.stdout) {
             process.stdout.write(result.stdout);
@@ -173,16 +182,16 @@ async function main(): Promise<void> {
         }
 
         if (result.success) {
-            process.stderr.write('Conversion completed successfully.\n');
+            process.stderr.write('Syntax check passed.\n');
             process.exitCode = EXIT_OK;
         } else {
-            process.stderr.write(`Conversion failed with exit code ${result.exitCode}.\n`);
-            process.exitCode = EXIT_CONVERSION_FAILED;
+            process.stderr.write(`Syntax check failed with exit code ${result.exitCode}.\n`);
+            process.exitCode = EXIT_SYNTAX_ERROR;
         }
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         process.stderr.write(`Error: ${message}\n`);
-        process.exitCode = EXIT_CONVERSION_FAILED;
+        process.exitCode = EXIT_SYNTAX_ERROR;
     }
 }
 
