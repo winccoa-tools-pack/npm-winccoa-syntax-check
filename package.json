@@ -1,6 +1,6 @@
 {
   "name": "@winccoa-tools-pack/npm-winccoa-syntax-check",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "WinCC OA syntax check tool for panels and scripts",
   "author": "winccoa-tools-pack",
   "license": "MIT",
