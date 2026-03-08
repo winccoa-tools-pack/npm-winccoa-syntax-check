@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-03-08
+
+### Added
+
+- introduce WinCC OA Syntax Check Tool
+
+### Fixed
+
+- enhance error detection by excluding Qt platform messages (#9)
+
+### Changed
+
+- bump actions/upload-artifact from 6 to 7 (#2)
+- deps-dev(deps-dev): bump @types/node in the testing group (#3)
+- bump minimatch and markdownlint-cli (#8)
+
 ## [0.2.0] - 2026-03-03
 
 ### Changed
