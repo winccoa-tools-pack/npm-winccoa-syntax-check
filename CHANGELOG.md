@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-05-18
+
+### Added
+
+- Add rebase-open-prs workflow (#21)
+
+### Fixed
+
+- trigger dependabot release PR on merge (#43)
+
+### Changed
+
+- deps-dev(deps-dev): bump typescript-eslint from 8.56.1 to 8.59.3 (#45)
+- deps-dev(deps-dev): bump prettier in the dev-tools group (#24)
+- Feature/align automation with core (#42)
+- fix spelling and package links in docs (#31)
+- fix src README and changelog (#39)
+
 ## [1.0.0] - 2026-03-08
 
 ### Added
