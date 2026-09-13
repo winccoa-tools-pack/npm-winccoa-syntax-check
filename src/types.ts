@@ -56,6 +56,14 @@ export interface SyntaxCheckOptions {
      * @default 60000
      */
     timeout?: number;
+
+    /**
+     * Force or suppress WCCOAui `-runas-os-root`.
+     *
+     * When omitted, the flag is added automatically if the process runs as
+     * root (uid 0). Set `true` to always add it, or `false` to never add it.
+     */
+    runAsOsRoot?: boolean;
 }
 
 /**

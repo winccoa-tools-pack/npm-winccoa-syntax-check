@@ -9,10 +9,14 @@
 export { SyntaxCheckMode, SyntaxCheckOptions, SyntaxCheckResult } from './types';
 
 // Core syntax checker
-export { SyntaxChecker } from './syntax-checker';
+export { SyntaxChecker, buildSyntaxCheckArgs } from './syntax-checker';
 
 // Convenience API
 export { checkSyntax, checkPanels, checkScripts } from './api';
 
 // Utilities
-export { containsStderrErrors, STDERR_ERROR_KEYWORDS } from './utils';
+export {
+    containsStderrErrors,
+    isProcessRunningAsRoot,
+    STDERR_ERROR_KEYWORDS,
+} from './utils';
