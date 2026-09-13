@@ -12,6 +12,27 @@
 export const STDERR_ERROR_KEYWORDS = ['WARNING', 'SEVERE', 'FATAL'] as const;
 
 /**
+ * Detect whether the current process is running as OS root (uid 0).
+ *
+ * Used so WCCOAui can receive `-runas-os-root` in CI/container root
+ * contexts. On platforms without `process.getuid` (Windows), returns false.
+ *
+ * @param getUid - Optional uid provider (for tests)
+ * @returns true when uid is 0
+ */
+export function isProcessRunningAsRoot(
+    getUid: () => number | undefined = () =>
+        typeof process.getuid === 'function' ? process.getuid() : undefined,
+): boolean {
+    try {
+        const uid = getUid();
+        return typeof uid === 'number' && uid === 0;
+    } catch {
+        return false;
+    }
+}
+
+/**
  * Patterns to exclude from error detection (false positives).
  * These are known non-error messages that may appear in stderr.
  */
