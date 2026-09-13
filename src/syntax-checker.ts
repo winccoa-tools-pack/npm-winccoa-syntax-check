@@ -1,11 +1,63 @@
 import { UIComponent } from '@winccoa-tools-pack/npm-winccoa-core/types/components/implementations/UIComponent';
 import { SyntaxCheckMode, SyntaxCheckOptions, SyntaxCheckResult } from './types';
-import { containsStderrErrors } from './utils';
+import { containsStderrErrors, isProcessRunningAsRoot } from './utils';
 
 /**
  * Default timeout for syntax check processes (60 seconds).
  */
 const DEFAULT_TIMEOUT = 60_000;
+
+/**
+ * Build WCCOAui argument list for a syntax check.
+ *
+ * Exported for unit tests; prefer {@link SyntaxChecker.check} at runtime.
+ *
+ * @param options - Syntax check options
+ * @param runningAsRoot - Whether the process is OS root (uid 0)
+ * @returns Array of CLI arguments
+ */
+export function buildSyntaxCheckArgs(
+    options: SyntaxCheckOptions,
+    runningAsRoot: boolean = isProcessRunningAsRoot(),
+): string[] {
+    const args: string[] = [];
+
+    // Project config path (required for -syntax)
+    args.push('-config', options.configPath);
+
+    // Build syntax mode string
+    const mode = options.mode ?? SyntaxCheckMode.ALL;
+    const integritySuffix = options.integrity ? '+' : '';
+    args.push('-syntax', `${mode}${integritySuffix}`);
+
+    // Add scripts path if provided
+    if (options.scriptsPath) {
+        args.push('-s', options.scriptsPath);
+    }
+
+    // Add panels path if provided
+    if (options.panelsPath) {
+        args.push('-p', options.panelsPath);
+    }
+
+    // Do not connect to WCCILevent
+    args.push('-n');
+
+    // Redirect log to stderr for capture
+    args.push('-log', '+stderr');
+
+    // Platform minimal for headless Linux support
+    args.push('-platform', 'minimal');
+
+    // WCCOAui refuses root without an explicit acknowledge flag.
+    // CI/docker often run as root; auto-add unless caller disables it.
+    const runAsOsRoot = options.runAsOsRoot ?? runningAsRoot;
+    if (runAsOsRoot) {
+        args.push('-runas-os-root');
+    }
+
+    return args;
+}
 
 /**
  * Core syntax checker class for WinCC OA projects.
@@ -41,36 +93,7 @@ export class SyntaxChecker {
      * @returns Array of CLI arguments
      */
     private buildArgs(options: SyntaxCheckOptions): string[] {
-        const args: string[] = [];
-
-        // Project config path (required for -syntax)
-        args.push('-config', options.configPath);
-
-        // Build syntax mode string
-        const mode = options.mode ?? SyntaxCheckMode.ALL;
-        const integritySuffix = options.integrity ? '+' : '';
-        args.push('-syntax', `${mode}${integritySuffix}`);
-
-        // Add scripts path if provided
-        if (options.scriptsPath) {
-            args.push('-s', options.scriptsPath);
-        }
-
-        // Add panels path if provided
-        if (options.panelsPath) {
-            args.push('-p', options.panelsPath);
-        }
-
-        // Do not connect to WCCILevent
-        args.push('-n');
-
-        // Redirect log to stderr for capture
-        args.push('-log', '+stderr');
-
-        // Platform minimal for headless Linux support
-        args.push('-platform', 'minimal');
-
-        return args;
+        return buildSyntaxCheckArgs(options);
     }
 
     /**
