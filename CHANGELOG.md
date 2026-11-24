@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-05-30
+
+### Added
+
+- Add rebase-open-prs workflow (#21)
+
+### Fixed
+
+- trigger dependabot release PR on merge (#43)
+
+### Changed
+
+- deps-dev(deps-dev): bump tsx from 4.21.0 to 4.22.3 (#50)
+- bump actions/github-script from 8 to 9 (#27)
+- deps-dev(deps-dev): bump flatted from 3.3.3 to 3.4.2 (#15)
+- bump picomatch from 4.0.3 to 4.0.4 (#18)
+- deps-dev(deps-dev): bump globals from 17.3.0 to 17.6.0 (#33)
+- deps-dev(deps-dev): bump prettier in the dev-tools group (#44)
+- bump @winccoa-tools-pack/npm-winccoa-core (#46)
+- deps-dev(deps-dev): bump typescript-eslint from 8.56.1 to 8.59.3 (#45)
+- deps-dev(deps-dev): bump prettier in the dev-tools group (#24)
+- Feature/align automation with core (#42)
+- fix spelling and package links in docs (#31)
+- fix src README and changelog (#39)
+
 ## [1.0.1] - 2026-05-18
 
 ### Added
