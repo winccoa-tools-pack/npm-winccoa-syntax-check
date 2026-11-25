@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-11-25
+
+### Changed
+
+- bump smol-toml and markdownlint-cli (#76)
+- align .github with template-npm-shared-library (#72)
+- deps-dev(deps-dev): bump @types/node in the testing group (#13)
+- deps-dev(deps-dev): bump typescript-eslint from 8.59.3 to 8.60.0 (#49)
+
 ## [1.0.2] - 2026-05-30
 
 ### Added
