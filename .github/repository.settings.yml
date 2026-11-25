@@ -1,7 +1,7 @@
 # Repository settings applied via GitHub REST API by .github/workflows/apply-settings-and-rulesets.yml
 # This repo uses GitFlow: develop is default, main is stable release.
 
-description: "The template for WinCC OA NPM packages"
+description: "WinCC OA syntax check tool for panels and scripts"
 homepage: "https://github.com/winccoa-tools-pack"
 default_branch: "develop"
 
