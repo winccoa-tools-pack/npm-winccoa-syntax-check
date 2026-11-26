@@ -1,6 +1,6 @@
 {
   "name": "@winccoa-tools-pack/npm-winccoa-syntax-check",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "WinCC OA syntax check tool for panels and scripts",
   "author": "winccoa-tools-pack",
   "license": "MIT",
@@ -55,7 +55,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "@types/node": "^25.3.5",
+    "@types/node": "^26.6.6",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
@@ -67,6 +67,9 @@
     "tsx": "^4.21.0",
     "typescript": "^5.2.0",
     "typescript-eslint": "^8.51.0"
+  },
+  "overrides": {
+    "katex": "^0.18.2"
   },
   "config": {
     "winccoaImage": "mpokornyetm/winccoa-tools-pack-npm-winccoa-core:npm-winccoa-core"
